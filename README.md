@@ -1,24 +1,178 @@
-# Next Boilerplate
+# next-apollo-provider
 
-Boilerplate for rapidly prototyping apps and components with next.js, react, express, pm2, tachyons.
+A helper to make an [ApolloProvider](http://dev.apollodata.com/react/index.html) available as a high order component (HOC) for [next.js](https://github.com/zeit/next.js) pages.
 
-## Quickstart
+## Install
 
-`git clone git@github.com:acorcutt/boilerplate.git`
+```
+npm install next-apollo-provider --save
+```
 
-`git remote rename origin upstream` or `git remote rm origin`
+## Setup
 
-`git remote add origin your-repos-url`
+By default the provider will create and cache its ApolloClient across requests, so its best to create your own `withApollo.js` HOC and not apply `nextApolloProvider` to components directly.
 
-## App Boilerplate
+### Create a basic HOC
 
-Custom next.js server routing in `app.js` pm2 cluster setup in `server.js` module export if required in `index.js`.
+Without settings it will try and create a client from the `GRAPHQL_URL` environment variable which should point to a graphql server. 
 
-### Run app as single instance
-`node app.js`
+```
+import nextApolloProvider from 'next-apollo-provider';
 
-### Run in a PM2 cluster
-`node server.js`
+export default nextApolloProvider();
+```
 
-### Build
-`next build`
+Ensure you make the environment variable available to the client - see [with-universal-configuration](https://github.com/zeit/next.js/tree/master/examples/with-universal-configuration) for an example.
+
+### Create from an ApolloClient settings object
+
+Provide an ApolloClient settings object to customise the connection. You should not set `initialState` and `ssrMode` they will be automatically attached. All other options are supported including networkInterfaces and middleware.
+
+```
+import nextApolloProvider from 'next-apollo-provider';
+import { createNetworkInterface } from 'react-apollo';
+
+export default nextApolloProvider({
+  connectToDevTools: (process.browser && process.env.NODE_ENV !== 'production'),
+  dataIdFromObject: (result) => (result.id || null),
+  networkInterface: createNetworkInterface({
+    uri: process.env.GRAPHQL_URL,
+    opts: {
+      credentials: 'same-origin'
+    }
+  })
+});
+```
+
+### Create from a function that returns settings
+
+You can provide a function that returns a settings object for more control. You will need to set the provided `initialState` and `ssrMode` yourself. The request context will be available on the initial server request to access headers etc.
+
+```
+import nextApolloProvider from 'next-apollo-provider';
+import { createNetworkInterface } from 'react-apollo';
+
+export default nextApolloProvider((initialState, ssrMode, context)=>{
+
+  let networkInterface = createNetworkInterface({
+    uri: process.env.GRAPHQL_URL,
+    opts: {
+      credentials: 'same-origin'
+    }
+  });
+    
+  networkInterface.use([{
+    applyMiddleware(req, next) {
+      // Do some middleware such as authentication headers.
+      next();
+    }
+  }]);
+  
+  return {
+    initialState,
+    ssrMode,
+    connectToDevTools: (process.browser && process.env.NODE_ENV !== 'production'),
+    dataIdFromObject: (result) => (result.id || null),
+    networkInterface
+  });
+```
+
+### Use a function that returns an ApolloClient
+
+If you need more control your settings function can return a `getApolloClient(initialState, ssrMode, context)` function which should return your own ApolloClient instance.
+
+```
+import nextApolloProvider from 'next-apollo-provider';
+import { ApolloClient, createNetworkInterface } from 'react-apollo';
+
+let apolloClient = null;
+
+function getApolloClient(initialState, ssrMode){
+  let settings = {
+    initialState,
+    ssrMode,
+    connectToDevTools: (process.browser && process.env.NODE_ENV !== 'production'),
+    dataIdFromObject: (result) => (result.id || null),
+    networkInterface: createNetworkInterface({
+      uri: process.env.GRAPHQL_URL,
+      opts: {
+        credentials: 'same-origin'
+      }
+    })
+  };
+
+  if (!process.browser) {
+    return new ApolloClient(settings);   
+  } else if(apolloClient) {
+    return apolloClient;
+  } else {
+    apolloClient = new ApolloClient(settings); 
+    return apolloClient;
+  }   
+}
+
+export default nextApolloProvider(()=>(getApolloClient));
+```
+
+### Redux Integration
+
+Provide a `getReduxStore(client, initialState)` function as the second parameter and return a reduxStore to use a custom Redux store.
+
+```
+import nextApolloProvider from 'next-apollo-provider';
+import { createNetworkInterface } from 'react-apollo';
+
+const apolloClientSettings = {
+  networkInterface: createNetworkInterface({
+    uri: process.env.GRAPHQL_URL,
+  })
+};
+
+let reduxStore = null;
+
+function getReduxStore(client, initialState){
+  ... TODO
+  return reduxStore;
+}
+export default nextApolloProvider(apolloClientSettings, getReduxStore);
+```
+
+
+### Usage
+
+Use the `withApollo` HOC you created to wrap a next.js page, compose with `graphql` as required. The server needs to evaluate `getInitialProps` twice to fetch the `initialSate`, so use the provided `initialState` property to detect when the server has data to prevent the rendering of multiple `<Head>` tags for example.
+
+```
+import { gql, graphql, compose } from 'react-apollo';
+import withApollo from './withApollo';
+
+const Posts = ({ initialState })=>{
+  return <div>{ initialState ? 'We have data!' : 'Server is loading data!'}</div>;
+}
+
+export default compose(
+  withApollo, 
+  graphql(gql`
+    query PostsQuery {
+      post {
+        id
+      }
+    }
+  `)
+)(Posts);
+```
+
+## Build & Run Examples
+
+The examples in `/pages` use an API at [graph.cool](https://api.graph.cool/simple/v1/cixmkt2ul01q00122mksg82pn)
+
+Set an environment variable for `GRAPHQL_URL=https://api.graph.cool/simple/v1/cixmkt2ul01q00122mksg82pn`
+
+The module uses a simple next boilerplate and exports `next-apollo-provider` from `/lib/next-apollo-provider`, run with `npm start dev`, build with `next build`.
+
+## TODO
+
+- Some tests
+- Custom client example
+- Redux example
+- Don't share instances across different settings, then we can use multiple clients and connections.

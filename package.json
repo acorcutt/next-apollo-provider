@@ -1,7 +1,7 @@
 {
-  "name": "boilerplate",
-  "version": "1.0.0",
-  "description": "App Boilerplate",
+  "name": "next-apollo-provider",
+  "version": "0.0.1",
+  "description": "A helper to make an ApolloProvider available as a high order component (HOC) for next.js pages.",
   "main": "index.js",
   "engines": {
     "node": "7"
@@ -13,21 +13,27 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/acorcutt/boilerplate.git"
+    "url": "git+https://github.com/acorcutt/next-apollo-provider.git"
   },
   "keywords": [
-    "boilerplate",
-    "react",
+    "apollo",
+    "graphql",
     "next",
-    "express"
+    "hoc"
   ],
   "author": "Anthony Corcutt",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/acorcutt/boilerplate/issues"
+    "url": "https://github.com/acorcutt/next-apollo-provider/issues"
   },
-  "homepage": "https://github.com/acorcutt/boilerplate#readme",
-  "dependencies": {
+  "homepage": "https://github.com/acorcutt/next-apollo-provider#readme",
+  "peerDependencies": {
+    "isomorphic-fetch": ">2.0.0",
+    "react-apollo": ">1.0.0",
+    "react": ">15.0.0",
+    "react-dom": ">15.0.0"
+  },
+  "devDependencies": {
     "babel-plugin-transform-define": "^1.2.0",
     "express": "^4.15.2",
     "next": "^2.1.1",
