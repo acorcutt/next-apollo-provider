@@ -1,7 +1,7 @@
 {
   "name": "next-apollo-provider",
-  "version": "0.0.4",
-  "description": "A helper to make an ApolloProvider available as a high order component (HOC) for next.js pages.",
+  "version": "0.0.5",
+  "description": "A helper to make an ApolloProvider available as a high order component for next.js pages.",
   "main": "index.js",
   "engines": {
     "node": "7"

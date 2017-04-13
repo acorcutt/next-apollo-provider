@@ -1,6 +1,6 @@
 # next-apollo-provider
 
-A helper to make an [ApolloProvider](http://dev.apollodata.com/react/index.html) available as a high order component (HOC) for [next.js](https://github.com/zeit/next.js) pages.
+A helper to make an [ApolloProvider](http://dev.apollodata.com/react/index.html) available as a high order component for [next.js](https://github.com/zeit/next.js) pages.
 
 ## Install
 
@@ -10,9 +10,9 @@ npm install next-apollo-provider --save
 
 ## Setup
 
-By default the provider will create and cache its ApolloClient across requests, so its best to create your own `withApollo.js` HOC and not apply `nextApolloProvider` to components directly.
+By default the provider will create and cache an ApolloClient for each unique URI provided to a NetworkInterface, so its best to create your own `withApollo.js` wrapper with your settings and not apply `nextApolloProvider` to components directly.
 
-### Create a basic HOC
+### Create a basic Wrapper
 
 Without settings it will try and create a client from the `GRAPHQL_URL` environment variable which should point to a graphql server. 
 
@@ -26,7 +26,8 @@ Ensure you make the environment variable available to the client - see [with-uni
 
 ### Create from an ApolloClient settings object
 
-Provide an ApolloClient settings object to customise the connection. You should not set `initialState` and `ssrMode` they will be automatically attached. All other options are supported including networkInterfaces and middleware.
+Provide an ApolloClient settings object to customise the connection. You should not set `initialState` and `ssrMode` they will be automatically attached. All other options are supported including networkInterfaces and middleware. 
+By default an ApolloClient will be created and reused across requests for each unique `networkInterface.uri` provided, you can supply an additional `name` property if you need multiple clients and settings per endpoint.
 
 ```
 import nextApolloProvider from 'next-apollo-provider';
@@ -175,4 +176,3 @@ The module uses a simple next boilerplate and exports `next-apollo-provider` fro
 - Some tests
 - Custom client example
 - Redux example
-- Don't share instances across different settings, then we can use multiple clients and connections.
