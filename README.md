@@ -14,12 +14,12 @@ By default the provider will create and cache an ApolloClient for each unique UR
 
 ### Create a basic Wrapper
 
-Without settings it will try and create a client from the `GRAPHQL_URL` environment variable which should point to a graphql server. 
+Provide a URL that points to a GraphQL server and a default configuration and network interface will be automatically created.
 
 ```
 import nextApolloProvider from 'next-apollo-provider';
 
-export default nextApolloProvider();
+export default nextApolloProvider(process.env.GRAPHQL_URL);
 ```
 
 Ensure you make the environment variable available to the client - see [with-universal-configuration](https://github.com/zeit/next.js/tree/master/examples/with-universal-configuration) for an example.
