@@ -1,6 +1,6 @@
 {
   "name": "next-apollo-provider",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A helper to make an ApolloProvider available as a high order component for next.js pages.",
   "main": "index.js",
   "engines": {

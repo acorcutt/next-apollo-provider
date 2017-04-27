@@ -147,7 +147,7 @@ Use the `withApollo` HOC you created to wrap a next.js page, compose with `graph
 import { gql, graphql, compose } from 'react-apollo';
 import withApollo from './withApollo';
 
-const Posts = ({ initialState })=>{
+const Posts = ({ initialState, apolloClient })=>{
   return <div>{ initialState ? 'We have data!' : 'Server is loading data!'}</div>;
 }
 
